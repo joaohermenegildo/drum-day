@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drum Day - Gerador de Inscrições</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }
+  header { background: #16213e; padding: 18px 30px; display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #7c3aed; }
+  header h1 { font-size: 1.4rem; color: #a78bfa; }
+  .container { max-width: 960px; margin: 30px auto; padding: 0 20px; }
+  .card { background: #16213e; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #2d2d5e; }
+  .card h2 { font-size: 1rem; color: #a78bfa; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .step-badge { background: #7c3aed; color: white; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; margin-right: 8px; }
+  label.upload-btn { display: inline-block; background: #7c3aed; color: white; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; transition: background 0.2s; }
+  label.upload-btn:hover { background: #6d28d9; }
+  input[type=file] { display: none; }
+  input[type=text] { background: #0f3460; border: 1px solid #4c1d95; color: #eee; padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; width: 100%; margin-top: 8px; }
+  .slider-group { margin-top: 14px; }
+  .slider-group label { font-size: 0.85rem; color: #c4b5fd; display: flex; justify-content: space-between; }
+  input[type=range] { width: 100%; accent-color: #7c3aed; margin-top: 4px; }
+  .circle-info { background: #0f3460; border-radius: 8px; padding: 12px 16px; font-size: 0.88rem; color: #c4b5fd; margin-top: 14px; }
+  .preview-area { display: flex; justify-content: center; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+  #preview-img { max-width: 100%; max-height: 500px; border-radius: 10px; border: 2px solid #4c1d95; display: none; }
+  .btn-green { background: #059669; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
+  .btn-green:hover { background: #047857; }
+  .btn-purple { background: #7c3aed; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 0.95rem; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
+  .btn-purple:hover { background: #6d28d9; }
+  .status { font-size: 0.85rem; color: #34d399; margin-top: 8px; min-height: 20px; }
+  .status.error { color: #f87171; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:600px){ .grid2 { grid-template-columns: 1fr; } }
+  .tag-detected { background: #064e3b; color: #34d399; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; display: inline-block; margin-left: 10px; }
+  .manual-inputs { display: none; margin-top: 12px; }
+  .manual-inputs.show { display: block; }
+  .small-input { display: inline-block; width: 80px; margin-right: 10px; }
+  .small-input input { text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  🥁 <h1>Drum Day 2026 — Gerador de Inscrições</h1>
+</header>
+<div class="container">
+
+  <!-- PASSO 1: Template -->
+  <div class="card">
+    <h2><span class="step-badge">1</span> Carregar template (imagem base)</h2>
+    <label class="upload-btn" for="templateInput">📂 Selecionar template PNG</label>
+    <input type="file" id="templateInput" accept="image/*">
+    <div id="template-status" class="status"></div>
+    <div id="circle-info" class="circle-info" style="display:none">
+      Círculo detectado automaticamente — Centro: <b id="circ-pos"></b> | Raio: <b id="circ-r"></b>px
+      <span class="tag-detected">✓ Automático</span>
+      <br><br>
+      <a href="#" id="toggle-manual" style="color:#a78bfa;font-size:0.82rem;">Ajustar manualmente</a>
+      <div class="manual-inputs" id="manual-inputs">
+        <br>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div><label style="font-size:0.8rem;color:#c4b5fd">Centro X</label><input type="number" id="man-cx" style="width:80px;background:#0f3460;border:1px solid #4c1d95;color:#eee;padding:6px;border-radius:6px;margin-top:4px"></div>
+          <div><label style="font-size:0.8rem;color:#c4b5fd">Centro Y</label><input type="number" id="man-cy" style="width:80px;background:#0f3460;border:1px solid #4c1d95;color:#eee;padding:6px;border-radius:6px;margin-top:4px"></div>
+          <div><label style="font-size:0.8rem;color:#c4b5fd">Raio</label><input type="number" id="man-r" style="width:80px;background:#0f3460;border:1px solid #4c1d95;color:#eee;padding:6px;border-radius:6px;margin-top:4px"></div>
+          <div style="display:flex;align-items:flex-end;"><button class="btn-purple" onclick="applyManual()">Aplicar</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 2: Foto participante -->
+  <div class="card">
+    <h2><span class="step-badge">2</span> Foto do participante</h2>
+    <label class="upload-btn" for="photoInput">🖼️ Selecionar foto</label>
+    <input type="file" id="photoInput" accept="image/*">
+    <div style="margin-top:12px">
+      <label style="font-size:0.9rem;color:#c4b5fd">Nome do participante:</label>
+      <input type="text" id="nomeInput" placeholder="Ex: João Silva">
+    </div>
+    <div id="photo-status" class="status"></div>
+  </div>
+
+  <!-- PASSO 3: Ajuste e Preview -->
+  <div class="card">
+    <h2><span class="step-badge">3</span> Ajustar e visualizar</h2>
+    <div class="grid2">
+      <div>
+        <div class="slider-group">
+          <label>🔍 Zoom <span id="zoom-val">1.0x</span></label>
+          <input type="range" id="zoom" min="0.5" max="3" step="0.05" value="1.0">
+        </div>
+        <div class="slider-group">
+          <label>↔️ Posição Horizontal <span id="ox-val">0</span></label>
+          <input type="range" id="offset_x" min="-300" max="300" step="5" value="0">
+        </div>
+        <div class="slider-group">
+          <label>↕️ Posição Vertical <span id="oy-val">0</span></label>
+          <input type="range" id="offset_y" min="-300" max="300" step="5" value="0">
+        </div>
+        <button class="btn-purple" onclick="updatePreview()" style="margin-top:16px">👁️ Atualizar Preview</button>
+      </div>
+      <div class="preview-area">
+        <img id="preview-img" src="" alt="Preview">
+        <div id="preview-placeholder" style="color:#4c1d95;font-size:0.9rem;text-align:center;padding:40px">
+          Configure os passos 1 e 2 para ver o preview
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 4: Download -->
+  <div class="card">
+    <h2><span class="step-badge">4</span> Baixar imagem final</h2>
+    <button class="btn-green" onclick="downloadFinal()">⬇️ Baixar PNG Final</button>
+    <div id="download-status" class="status"></div>
+  </div>
+
+</div>
+
+<script>
+let state = { cx: null, cy: null, r: null, templateReady: false, photoReady: false };
+
+document.getElementById("templateInput").addEventListener("change", async function() {
+  const file = this.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById("template-status");
+  statusEl.textContent = "Detectando círculo...";
+  statusEl.className = "status";
+
+  const formData = new FormData();
+  formData.append("template", file);
+
+  const res = await fetch("/detect_circle", { method: "POST", body: formData });
+  const data = await res.json();
+
+  if (data.error) {
+    statusEl.textContent = "⚠️ " + data.error + " — ajuste manualmente abaixo.";
+    statusEl.className = "status error";
+    document.getElementById("circle-info").style.display = "block";
+  } else {
+    state.cx = data.cx; state.cy = data.cy; state.r = data.r;
+    state.templateReady = true;
+    document.getElementById("circ-pos").textContent = data.cx + ", " + data.cy;
+    document.getElementById("circ-r").textContent = data.r;
+    document.getElementById("man-cx").value = data.cx;
+    document.getElementById("man-cy").value = data.cy;
+    document.getElementById("man-r").value = data.r;
+    document.getElementById("circle-info").style.display = "block";
+    statusEl.textContent = "✅ Template carregado!";
+  }
+  tryAutoPreview();
+});
+
+document.getElementById("photoInput").addEventListener("change", async function() {
+  const file = this.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById("photo-status");
+  statusEl.textContent = "Enviando foto...";
+
+  const formData = new FormData();
+  formData.append("photo", file);
+
+  const res = await fetch("/upload_photo", { method: "POST", body: formData });
+  const data = await res.json();
+  if (data.ok) {
+    state.photoReady = true;
+    statusEl.textContent = "✅ Foto carregada!";
+    tryAutoPreview();
+  }
+});
+
+document.getElementById("toggle-manual").addEventListener("click", function(e) {
+  e.preventDefault();
+  document.getElementById("manual-inputs").classList.toggle("show");
+});
+
+function applyManual() {
+  state.cx = parseInt(document.getElementById("man-cx").value);
+  state.cy = parseInt(document.getElementById("man-cy").value);
+  state.r = parseInt(document.getElementById("man-r").value);
+  state.templateReady = true;
+  document.getElementById("circ-pos").textContent = state.cx + ", " + state.cy;
+  document.getElementById("circ-r").textContent = state.r;
+  updatePreview();
+}
+
+["zoom","offset_x","offset_y"].forEach(id => {
+  document.getElementById(id).addEventListener("input", function() {
+    if (id === "zoom") document.getElementById("zoom-val").textContent = parseFloat(this.value).toFixed(2) + "x";
+    if (id === "offset_x") document.getElementById("ox-val").textContent = this.value;
+    if (id === "offset_y") document.getElementById("oy-val").textContent = this.value;
+  });
+});
+
+function tryAutoPreview() {
+  if (state.templateReady && state.photoReady) updatePreview();
+}
+
+async function updatePreview() {
+  if (!state.templateReady || !state.photoReady) {
+    alert("Carregue o template e a foto primeiro!"); return;
+  }
+  const res = await fetch("/preview", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      cx: state.cx, cy: state.cy, r: state.r,
+      zoom: parseFloat(document.getElementById("zoom").value),
+      offset_x: parseInt(document.getElementById("offset_x").value),
+      offset_y: parseInt(document.getElementById("offset_y").value)
+    })
+  });
+  const data = await res.json();
+  const img = document.getElementById("preview-img");
+  img.src = "data:image/png;base64," + data.image;
+  img.style.display = "block";
+  document.getElementById("preview-placeholder").style.display = "none";
+}
+
+async function downloadFinal() {
+  if (!state.templateReady || !state.photoReady) {
+    alert("Carregue o template e a foto primeiro!"); return;
+  }
+  const nome = document.getElementById("nomeInput").value || "participante";
+  const statusEl = document.getElementById("download-status");
+  statusEl.textContent = "Gerando...";
+
+  const res = await fetch("/download", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      cx: state.cx, cy: state.cy, r: state.r,
+      zoom: parseFloat(document.getElementById("zoom").value),
+      offset_x: parseInt(document.getElementById("offset_x").value),
+      offset_y: parseInt(document.getElementById("offset_y").value),
+      nome: nome
+    })
+  });
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = nome.replace(/ /g,"_") + "_drumday.png";
+  a.click();
+  statusEl.textContent = "✅ Imagem baixada com sucesso!";
+}
+</script>
+</body>
+</html>
